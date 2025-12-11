@@ -283,11 +283,15 @@ def run(name: str, args: tuple[str, ...]):
             if "-c" in cmd or "-e" in cmd:
                 # Write to temp file and run with args
                 ext = storage.get_extension(lang)
-                with tempfile.NamedTemporaryFile(
-                    mode="w", suffix=ext, delete=False
-                ) as f:
-                    f.write(code)
-                    temp_path = f.name
+                try:
+                    with tempfile.NamedTemporaryFile(
+                        mode="w", suffix=ext, delete=False
+                    ) as f:
+                        f.write(code)
+                        temp_path = f.name
+                except OSError as e:
+                    console.print(f"[red]Error creating temp file: {e}[/red]")
+                    raise SystemExit(1)
                 try:
                     interpreter = cmd[0]
                     result = subprocess.run([interpreter, temp_path, *args])
