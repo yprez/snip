@@ -151,10 +151,20 @@ ruff check src tests    # Lint
 ruff format src tests   # Format
 ```
 
-## Future Plans
+## Possible next steps
 
-- [x] Edit snippets in-place with `$EDITOR`
-- [ ] Snippet versioning / history
-- [ ] Sync snippets across machines (git-based)
-- [ ] Snippet templates with variable substitution
-- [ ] Shell completions (bash, zsh, fish)
+- Package for PyPI/pipx with a proper `pyproject.toml`, metadata, and CLI entry points
+- Improve `snip edit` ergonomics (better `$EDITOR` integration and workflows)
+- Allow language changes during edit and rename files accordingly
+- Support tag operations: add, remove, and replace
+- Add overwrite protection on `snip add` with `--force`
+- Load defaults and themes from `~/.snip/config.toml`
+- Provide sorting and limiting options in `snip list`
+- Add fuzzy search via `snip search -f`
+- Offer an interactive picker (`snip pick`) with optional `fzf` integration
+- Add a snippet rename command
+- Track snippet history and versions with automatic backups on overwrite
+- Add `snip log`, `snip show`, and `snip diff`
+- Support optional git-based sync in the snippets directory
+- Provide snippet templates and `snip new`
+- Add shell completions for bash, zsh, and fish
