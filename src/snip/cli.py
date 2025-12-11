@@ -234,7 +234,7 @@ def import_snippet(file: str, name: str, language: str, tags: tuple[str, ...]):
 @click.argument("name")
 @click.argument("args", nargs=-1)
 def run(name: str, args: tuple[str, ...]):
-    """Execute a snippet (supports python, bash, shell)."""
+    """Execute a snippet (supports python, bash, sh, zsh, node, ruby, perl)."""
     import subprocess
     import tempfile
     from pathlib import Path
@@ -286,7 +286,9 @@ def run(name: str, args: tuple[str, ...]):
         raise SystemExit(result.returncode)
     else:
         console.print(f"[red]Cannot execute '{lang}' snippets directly[/red]")
-        console.print("[dim]Supported: python, bash, shell, node, ruby, perl[/dim]")
+        console.print(
+            "[dim]Supported: python, bash, sh, zsh, node/javascript/js, ruby, perl[/dim]"
+        )
         raise SystemExit(1)
 
 
