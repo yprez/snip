@@ -351,7 +351,15 @@ def edit(
         return
 
     # Open in editor
+    import shutil
+
     editor = os.environ.get("EDITOR", os.environ.get("VISUAL", "vi"))
+
+    if not shutil.which(editor):
+        console.print(f"[red]Editor '{editor}' not found[/red]")
+        console.print("[dim]Set $EDITOR or $VISUAL to a valid editor[/dim]")
+        raise SystemExit(1)
+
     code_path, _ = storage.find_snippet_files(name)
 
     if not code_path or not code_path.exists():
