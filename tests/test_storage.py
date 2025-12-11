@@ -176,6 +176,33 @@ class TestDeleteSnippet:
         assert not meta_path.exists()
 
 
+class TestUpdateSnippetMeta:
+    """Tests for update_snippet_meta function."""
+
+    def test_update_tags(self, temp_snippets_dir):
+        storage.add_snippet("test", "code", "python", ["old"])
+
+        result = storage.update_snippet_meta("test", tags=["new1", "new2"])
+
+        assert result is True
+        snippet = storage.get_snippet("test")
+        assert snippet["tags"] == ["new1", "new2"]
+
+    def test_update_nonexistent_returns_false(self, temp_snippets_dir):
+        result = storage.update_snippet_meta("nonexistent", tags=["tag"])
+        assert result is False
+
+    def test_update_preserves_other_metadata(self, temp_snippets_dir):
+        storage.add_snippet("test", "code", "python", ["old"])
+
+        storage.update_snippet_meta("test", tags=["new"])
+
+        snippet = storage.get_snippet("test")
+        assert snippet["name"] == "test"
+        assert snippet["language"] == "python"
+        assert "created" in snippet
+
+
 class TestListAllSnippets:
     """Tests for list_all_snippets function."""
 

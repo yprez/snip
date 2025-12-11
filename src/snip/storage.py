@@ -179,6 +179,28 @@ def delete_snippet(name: str) -> bool:
     return True
 
 
+def update_snippet_meta(
+    name: str,
+    tags: Optional[list[str]] = None,
+) -> bool:
+    """Update snippet metadata. Returns True if updated, False if not found."""
+    _, meta_path = find_snippet_files(name)
+
+    if not meta_path or not meta_path.exists():
+        return False
+
+    with open(meta_path, "r") as f:
+        meta = json.load(f)
+
+    if tags is not None:
+        meta["tags"] = tags
+
+    with open(meta_path, "w") as f:
+        json.dump(meta, f, indent=2)
+
+    return True
+
+
 def list_all_snippets() -> dict:
     """List all snippets."""
     snippets_dir = get_snippets_dir()

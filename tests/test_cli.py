@@ -360,3 +360,83 @@ class TestPathCommand:
 
         assert result.exit_code == 0
         assert str(temp_snippets_dir) in result.output
+
+
+class TestEditCommand:
+    """Tests for the edit command."""
+
+    def test_edit_nonexistent_snippet(self, runner, temp_snippets_dir):
+        result = runner.invoke(main, ["edit", "nonexistent"])
+
+        assert result.exit_code == 1
+        assert "not found" in result.output.lower()
+
+    def test_edit_add_tag(self, runner, temp_snippets_dir):
+        storage.add_snippet("test", "code", "python", ["existing"])
+
+        result = runner.invoke(main, ["edit", "test", "--add-tag", "newtag"])
+
+        assert result.exit_code == 0
+        assert "updated" in result.output.lower()
+        snippet = storage.get_snippet("test")
+        assert "existing" in snippet["tags"]
+        assert "newtag" in snippet["tags"]
+
+    def test_edit_remove_tag(self, runner, temp_snippets_dir):
+        storage.add_snippet("test", "code", "python", ["keep", "remove"])
+
+        result = runner.invoke(main, ["edit", "test", "--remove-tag", "remove"])
+
+        assert result.exit_code == 0
+        snippet = storage.get_snippet("test")
+        assert "keep" in snippet["tags"]
+        assert "remove" not in snippet["tags"]
+
+    def test_edit_replace_tags(self, runner, temp_snippets_dir):
+        storage.add_snippet("test", "code", "python", ["old1", "old2"])
+
+        result = runner.invoke(main, ["edit", "test", "-t", "new1", "-t", "new2"])
+
+        assert result.exit_code == 0
+        snippet = storage.get_snippet("test")
+        assert snippet["tags"] == ["new1", "new2"]
+
+    def test_edit_change_language(self, runner, temp_snippets_dir):
+        storage.add_snippet("test", "echo hello", "text")
+
+        result = runner.invoke(main, ["edit", "test", "-l", "bash"])
+
+        assert result.exit_code == 0
+        assert "language: bash" in result.output.lower()
+        snippet = storage.get_snippet("test")
+        assert snippet["language"] == "bash"
+        # File should now have .sh extension
+        assert (temp_snippets_dir / "test.sh").exists()
+        assert not (temp_snippets_dir / "test.txt").exists()
+
+    def test_edit_with_editor(self, runner, temp_snippets_dir):
+        storage.add_snippet("test", "original code", "python")
+
+        # Use 'true' as a no-op editor that exits successfully
+        with patch.dict("os.environ", {"EDITOR": "true"}):
+            result = runner.invoke(main, ["edit", "test"])
+
+        assert result.exit_code == 0
+        # File wasn't modified by 'true', so should show no changes
+        assert "no changes" in result.output.lower()
+
+    def test_edit_with_editor_modifies_file(self, runner, temp_snippets_dir):
+        storage.add_snippet("test", "original", "python")
+        code_path = temp_snippets_dir / "test.py"
+
+        # Create a script that modifies the file
+        script = temp_snippets_dir / "edit_script.sh"
+        script.write_text('#!/bin/bash\necho "modified" > "$1"')
+        script.chmod(0o755)
+
+        with patch.dict("os.environ", {"EDITOR": str(script)}):
+            result = runner.invoke(main, ["edit", "test"])
+
+        assert result.exit_code == 0
+        assert "updated" in result.output.lower()
+        assert code_path.read_text().strip() == "modified"

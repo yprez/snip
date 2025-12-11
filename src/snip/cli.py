@@ -297,5 +297,85 @@ def path():
     console.print(f"{snippets_dir}")
 
 
+@main.command()
+@click.argument("name")
+@click.option("-l", "--language", help="Change the snippet language")
+@click.option("-t", "--tags", multiple=True, help="Set tags (replaces existing)")
+@click.option("--add-tag", multiple=True, help="Add a tag")
+@click.option("--remove-tag", multiple=True, help="Remove a tag")
+def edit(
+    name: str,
+    language: str,
+    tags: tuple[str, ...],
+    add_tag: tuple[str, ...],
+    remove_tag: tuple[str, ...],
+):
+    """Edit a snippet in your $EDITOR."""
+    import os
+    import subprocess
+
+    snippet = storage.get_snippet(name)
+
+    if not snippet:
+        console.print(f"[red]Snippet '{name}' not found[/red]")
+        raise SystemExit(1)
+
+    # Handle metadata-only updates (no editor)
+    if language or tags or add_tag or remove_tag:
+        current_tags = snippet.get("tags", [])
+        new_language = language or snippet["language"]
+
+        # Determine new tags
+        if tags:
+            new_tags = list(tags)
+        else:
+            new_tags = current_tags.copy()
+            for tag in add_tag:
+                if tag not in new_tags:
+                    new_tags.append(tag)
+            for tag in remove_tag:
+                if tag in new_tags:
+                    new_tags.remove(tag)
+
+        # If language changed, we need to rename the file
+        if new_language != snippet["language"]:
+            # Delete old and create new with updated language
+            code = snippet["code"]
+            storage.delete_snippet(name)
+            storage.add_snippet(name, code, new_language, new_tags)
+            console.print(f"[green]Updated '{name}' (language: {new_language})[/green]")
+        else:
+            # Just update metadata
+            storage.update_snippet_meta(name, tags=new_tags)
+            console.print(f"[green]Updated '{name}' metadata[/green]")
+        return
+
+    # Open in editor
+    editor = os.environ.get("EDITOR", os.environ.get("VISUAL", "vi"))
+    code_path, _ = storage.find_snippet_files(name)
+
+    if not code_path or not code_path.exists():
+        console.print("[red]Snippet file not found[/red]")
+        raise SystemExit(1)
+
+    # Get file modification time before editing
+    mtime_before = code_path.stat().st_mtime
+
+    # Open editor
+    result = subprocess.run([editor, str(code_path)])
+
+    if result.returncode != 0:
+        console.print("[red]Editor exited with error[/red]")
+        raise SystemExit(result.returncode)
+
+    # Check if file was modified
+    mtime_after = code_path.stat().st_mtime
+
+    if mtime_after > mtime_before:
+        console.print(f"[green]Snippet '{name}' updated[/green]")
+    else:
+        console.print(f"[dim]No changes made to '{name}'[/dim]")
+
+
 if __name__ == "__main__":
     main()
