@@ -4,6 +4,7 @@ A CLI tool to save, search, and retrieve code snippets with syntax highlighting,
 
 ## General guidelines
 
+- Always use `uv run` to execute commands (e.g., `uv run pytest`, `uv run snip`) to ensure the correct Python version
 - When suggesting changes to a file, prefer breaking them into smaller chunks
 - Never tell the user "you're absolutely right" or similar affirmations. Assume the user might be wrong and double-check their assumptions before proceeding
 - Commit after every small step - don't batch changes
