@@ -84,9 +84,9 @@ def get_snippets_dir() -> Path:
 def sanitize_name(name: str) -> str:
     """Sanitize snippet name for use as filename."""
     # Replace problematic characters with underscores
-    sanitized = re.sub(r'[<>:"/\\|?*]', '_', name)
+    sanitized = re.sub(r'[<>:"/\\|?*]', "_", name)
     # Remove leading/trailing dots and spaces
-    sanitized = sanitized.strip('. ')
+    sanitized = sanitized.strip(". ")
     return sanitized or "unnamed"
 
 

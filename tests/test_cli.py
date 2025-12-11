@@ -49,7 +49,9 @@ class TestAddCommand:
     """Tests for the add command."""
 
     def test_add_basic_snippet(self, runner, temp_snippets_dir):
-        result = runner.invoke(main, ["add", "hello", "-l", "python"], input="print('hello')\n")
+        result = runner.invoke(
+            main, ["add", "hello", "-l", "python"], input="print('hello')\n"
+        )
 
         assert result.exit_code == 0
         assert "saved" in result.output.lower()
@@ -289,7 +291,9 @@ class TestImportCommand:
         with runner.isolated_filesystem():
             Path("script.py").write_text("code")
 
-            result = runner.invoke(main, ["import", "script.py", "-t", "util", "-t", "imported"])
+            result = runner.invoke(
+                main, ["import", "script.py", "-t", "util", "-t", "imported"]
+            )
 
             assert result.exit_code == 0
             snippet = storage.get_snippet("script")

@@ -23,8 +23,18 @@ def main():
 
 @main.command()
 @click.argument("name")
-@click.option("-l", "--language", default="text", help="Programming language for syntax highlighting")
-@click.option("-t", "--tags", multiple=True, help="Tags for the snippet (can be used multiple times)")
+@click.option(
+    "-l",
+    "--language",
+    default="text",
+    help="Programming language for syntax highlighting",
+)
+@click.option(
+    "-t",
+    "--tags",
+    multiple=True,
+    help="Tags for the snippet (can be used multiple times)",
+)
 def add(name: str, language: str, tags: tuple[str, ...]):
     """Add a new snippet. Reads code from stdin."""
     if sys.stdin.isatty():
@@ -56,16 +66,21 @@ def get(name: str, copy: bool):
         console.print(f"[dim]Tags: {', '.join(snippet['tags'])}[/dim]")
     console.print()
 
-    syntax = Syntax(snippet["code"], snippet["language"], theme="monokai", line_numbers=True)
+    syntax = Syntax(
+        snippet["code"], snippet["language"], theme="monokai", line_numbers=True
+    )
     console.print(syntax)
 
     if copy:
         try:
             import pyperclip
+
             pyperclip.copy(snippet["code"])
             console.print("\n[green]Copied to clipboard![/green]")
         except Exception:
-            console.print("\n[yellow]Could not copy to clipboard (pyperclip not working)[/yellow]")
+            console.print(
+                "\n[yellow]Could not copy to clipboard (pyperclip not working)[/yellow]"
+            )
 
 
 @main.command("list")
@@ -81,9 +96,17 @@ def list_snippets(language: str, tag: str):
 
     # Apply filters
     if language:
-        snippets = {k: v for k, v in snippets.items() if v["language"].lower() == language.lower()}
+        snippets = {
+            k: v
+            for k, v in snippets.items()
+            if v["language"].lower() == language.lower()
+        }
     if tag:
-        snippets = {k: v for k, v in snippets.items() if tag.lower() in [t.lower() for t in v["tags"]]}
+        snippets = {
+            k: v
+            for k, v in snippets.items()
+            if tag.lower() in [t.lower() for t in v["tags"]]
+        }
 
     if not snippets:
         console.print("[dim]No snippets match the filters.[/dim]")
@@ -130,7 +153,7 @@ def search(query: str):
         )
 
     console.print(table)
-    console.print(f"\n[dim]Use 'snip get <name>' to view a snippet[/dim]")
+    console.print("\n[dim]Use 'snip get <name>' to view a snippet[/dim]")
 
 
 @main.command()
@@ -246,7 +269,9 @@ def run(name: str, args: tuple[str, ...]):
             if "-c" in cmd or "-e" in cmd:
                 # Write to temp file and run with args
                 ext = storage.get_extension(lang)
-                with tempfile.NamedTemporaryFile(mode="w", suffix=ext, delete=False) as f:
+                with tempfile.NamedTemporaryFile(
+                    mode="w", suffix=ext, delete=False
+                ) as f:
                     f.write(code)
                     temp_path = f.name
                 try:
@@ -261,7 +286,7 @@ def run(name: str, args: tuple[str, ...]):
         raise SystemExit(result.returncode)
     else:
         console.print(f"[red]Cannot execute '{lang}' snippets directly[/red]")
-        console.print(f"[dim]Supported: python, bash, shell, node, ruby, perl[/dim]")
+        console.print("[dim]Supported: python, bash, shell, node, ruby, perl[/dim]")
         raise SystemExit(1)
 
 

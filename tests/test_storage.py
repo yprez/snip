@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -50,7 +49,7 @@ class TestSanitizeName:
 
     def test_removes_problematic_characters(self):
         assert storage.sanitize_name("test<>file") == "test__file"
-        assert storage.sanitize_name('path/to\\file') == "path_to_file"
+        assert storage.sanitize_name("path/to\\file") == "path_to_file"
         assert storage.sanitize_name("file:name") == "file_name"
         assert storage.sanitize_name("test?*file") == "test__file"
 
@@ -86,7 +85,9 @@ class TestAddSnippet:
         assert "created" in meta
 
     def test_add_snippet_with_tags(self, temp_snippets_dir):
-        storage.add_snippet("greet", "def greet(): pass", "python", ["util", "function"])
+        storage.add_snippet(
+            "greet", "def greet(): pass", "python", ["util", "function"]
+        )
 
         meta_path = temp_snippets_dir / "greet.meta.json"
         meta = json.loads(meta_path.read_text())
@@ -136,7 +137,9 @@ class TestGetSnippet:
     def test_get_snippet_with_missing_code_file(self, temp_snippets_dir):
         # Create only metadata file
         meta_path = temp_snippets_dir / "broken.meta.json"
-        meta_path.write_text(json.dumps({"name": "broken", "language": "python", "tags": []}))
+        meta_path.write_text(
+            json.dumps({"name": "broken", "language": "python", "tags": []})
+        )
 
         snippet = storage.get_snippet("broken")
 
@@ -163,7 +166,9 @@ class TestDeleteSnippet:
     def test_delete_snippet_with_only_meta(self, temp_snippets_dir):
         # Create only metadata
         meta_path = temp_snippets_dir / "orphan.meta.json"
-        meta_path.write_text(json.dumps({"name": "orphan", "language": "python", "tags": []}))
+        meta_path.write_text(
+            json.dumps({"name": "orphan", "language": "python", "tags": []})
+        )
 
         result = storage.delete_snippet("orphan")
 
