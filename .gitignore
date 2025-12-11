@@ -27,3 +27,6 @@ ENV/
 .vscode/
 *.swp
 *.swo
+.coverage
+.pytest_cache/
+htmlcov/
