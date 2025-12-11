@@ -37,6 +37,13 @@ def main():
 )
 def add(name: str, language: str, tags: tuple[str, ...]):
     """Add a new snippet. Reads code from stdin."""
+    # Validate name
+    sanitized = storage.sanitize_name(name)
+    if sanitized == "unnamed":
+        console.print("[red]Error: Invalid snippet name[/red]")
+        console.print("[dim]Name must contain at least one alphanumeric character[/dim]")
+        raise SystemExit(1)
+
     if sys.stdin.isatty():
         console.print("[yellow]Enter your code snippet (Ctrl+D when done):[/yellow]")
 
@@ -214,6 +221,13 @@ def import_snippet(file: str, name: str, language: str, tags: tuple[str, ...]):
     # Default name from filename (without extension)
     if not name:
         name = file_path.stem
+
+    # Validate name
+    sanitized = storage.sanitize_name(name)
+    if sanitized == "unnamed":
+        console.print("[red]Error: Invalid snippet name[/red]")
+        console.print("[dim]Name must contain at least one alphanumeric character[/dim]")
+        raise SystemExit(1)
 
     # Detect language from extension
     if not language:
