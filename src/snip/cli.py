@@ -153,5 +153,124 @@ def delete(name: str, force: bool):
     console.print(f"[green]Snippet '{name}' deleted[/green]")
 
 
+@main.command("export")
+@click.argument("name")
+@click.argument("dest", type=click.Path(), required=False)
+def export_snippet(name: str, dest: str):
+    """Export a snippet to a file."""
+    from pathlib import Path
+
+    snippet = storage.get_snippet(name)
+
+    if not snippet:
+        console.print(f"[red]Snippet '{name}' not found[/red]")
+        raise SystemExit(1)
+
+    # Default destination: current dir with proper extension
+    if not dest:
+        ext = storage.get_extension(snippet["language"])
+        dest = f"{storage.sanitize_name(name)}{ext}"
+
+    dest_path = Path(dest)
+    dest_path.write_text(snippet["code"])
+    console.print(f"[green]Exported '{name}' to {dest_path}[/green]")
+
+
+@main.command("import")
+@click.argument("file", type=click.Path(exists=True))
+@click.option("-n", "--name", help="Name for the snippet (default: filename)")
+@click.option("-l", "--language", help="Language (default: detect from extension)")
+@click.option("-t", "--tags", multiple=True, help="Tags for the snippet")
+def import_snippet(file: str, name: str, language: str, tags: tuple[str, ...]):
+    """Import a file as a snippet."""
+    from pathlib import Path
+
+    file_path = Path(file)
+    code = file_path.read_text()
+
+    # Default name from filename (without extension)
+    if not name:
+        name = file_path.stem
+
+    # Detect language from extension
+    if not language:
+        ext = file_path.suffix.lower()
+        # Reverse lookup in LANG_EXTENSIONS
+        for lang, lang_ext in storage.LANG_EXTENSIONS.items():
+            if lang_ext == ext:
+                language = lang
+                break
+        else:
+            language = "text"
+
+    storage.add_snippet(name, code, language, list(tags))
+    console.print(f"[green]Imported '{file_path.name}' as snippet '{name}'[/green]")
+
+
+@main.command()
+@click.argument("name")
+@click.argument("args", nargs=-1)
+def run(name: str, args: tuple[str, ...]):
+    """Execute a snippet (supports python, bash, shell)."""
+    import subprocess
+    import tempfile
+    from pathlib import Path
+
+    snippet = storage.get_snippet(name)
+
+    if not snippet:
+        console.print(f"[red]Snippet '{name}' not found[/red]")
+        raise SystemExit(1)
+
+    lang = snippet["language"].lower()
+    code = snippet["code"]
+
+    # Determine how to run the snippet
+    runners = {
+        "python": ["python3", "-c", code],
+        "bash": ["bash", "-c", code],
+        "shell": ["sh", "-c", code],
+        "sh": ["sh", "-c", code],
+        "zsh": ["zsh", "-c", code],
+        "node": ["node", "-e", code],
+        "javascript": ["node", "-e", code],
+        "js": ["node", "-e", code],
+        "ruby": ["ruby", "-e", code],
+        "perl": ["perl", "-e", code],
+    }
+
+    if lang in runners:
+        cmd = runners[lang]
+        if args:
+            # For -c style commands, args need to be passed differently
+            if "-c" in cmd or "-e" in cmd:
+                # Write to temp file and run with args
+                ext = storage.get_extension(lang)
+                with tempfile.NamedTemporaryFile(mode="w", suffix=ext, delete=False) as f:
+                    f.write(code)
+                    temp_path = f.name
+                try:
+                    interpreter = cmd[0]
+                    result = subprocess.run([interpreter, temp_path, *args])
+                    raise SystemExit(result.returncode)
+                finally:
+                    Path(temp_path).unlink()
+            else:
+                cmd.extend(args)
+        result = subprocess.run(cmd)
+        raise SystemExit(result.returncode)
+    else:
+        console.print(f"[red]Cannot execute '{lang}' snippets directly[/red]")
+        console.print(f"[dim]Supported: python, bash, shell, node, ruby, perl[/dim]")
+        raise SystemExit(1)
+
+
+@main.command()
+def path():
+    """Show the snippets storage directory."""
+    snippets_dir = storage.get_snippets_dir()
+    console.print(f"{snippets_dir}")
+
+
 if __name__ == "__main__":
     main()

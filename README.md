@@ -42,6 +42,24 @@ snip get hello -c        # Copy to clipboard
 snip search python       # Search by name, language, or tag
 ```
 
+### Run a snippet
+
+```bash
+snip run hello           # Execute the snippet
+snip run hello arg1 arg2 # Pass arguments
+```
+
+Supported languages: python, bash, shell, node/javascript, ruby, perl
+
+### Export / Import
+
+```bash
+snip export hello              # Export to ./hello.py
+snip export hello ~/code/      # Export to specific path
+snip import script.py          # Import file as snippet
+snip import script.py -n myscript -t util
+```
+
 ### Delete a snippet
 
 ```bash
@@ -49,9 +67,17 @@ snip delete hello        # With confirmation
 snip delete hello -f     # Force delete
 ```
 
+### Show storage path
+
+```bash
+snip path                # Shows ~/.snip/snippets/
+```
+
 ## Storage
 
-Snippets are stored in `~/.snip/snippets.json`.
+Snippets are stored in `~/.snip/snippets/` as individual files:
+- `<name>.<ext>` - The actual code file (e.g., `hello.py`)
+- `<name>.meta.json` - Metadata (language, tags, created date)
 
 ## Development
 
@@ -60,3 +86,11 @@ uv venv
 source .venv/bin/activate
 uv pip install -e .
 ```
+
+## Future Plans
+
+- [ ] Edit snippets in-place with `$EDITOR`
+- [ ] Snippet versioning / history
+- [ ] Sync snippets across machines (git-based)
+- [ ] Snippet templates with variable substitution
+- [ ] Shell completions (bash, zsh, fish)
