@@ -1,5 +1,7 @@
 """CLI interface for snip."""
 
+from __future__ import annotations
+
 import sys
 
 import click
@@ -66,10 +68,10 @@ def get(name: str, copy: bool):
             console.print("\n[yellow]Could not copy to clipboard (pyperclip not working)[/yellow]")
 
 
-@main.command()
+@main.command("list")
 @click.option("-l", "--language", help="Filter by language")
 @click.option("-t", "--tag", help="Filter by tag")
-def list(language: str, tag: str):
+def list_snippets(language: str, tag: str):
     """List all saved snippets."""
     snippets = storage.list_all_snippets()
 
