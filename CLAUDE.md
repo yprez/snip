@@ -2,12 +2,28 @@
 
 A CLI tool to save, search, and retrieve code snippets with syntax highlighting, clipboard support, and direct execution.
 
+## Critical rules
+
+**NEVER commit without running checks.** All tests and lints must pass.
+
+| Changed | Run |
+|---------|-----|
+| `.py` | `uv run pytest && uv run ruff check .` |
+
+**NEVER add AI attribution.** No "Generated with Claude", no "Co-Authored-By: Claude", no emojis.
+
+---
+
 ## General guidelines
 
 - Always use `uv run` to execute commands (e.g., `uv run pytest`, `uv run snip`) to ensure the correct Python version
 - When suggesting changes to a file, prefer breaking them into smaller chunks
 - Never tell the user "you're absolutely right" or similar affirmations. Assume the user might be wrong and double-check their assumptions before proceeding
+- Before addressing big features or complicated bugs, create a planning doc in `docs/planning/`
 - Commit after every small step - don't batch changes
+- Act autonomously on reversible changes; ask before changing CLI interface or storage format
+- **Explicit assumptions:** State assumptions clearly before proceeding with implementation. If requirements are ambiguous, ask targeted questions rather than guessing.
+- **No silent failures:** Surface errors explicitly - never skip or ignore test failures, linting errors, or runtime exceptions. Fix all issues before finishing.
 
 ## Development commands
 
@@ -82,6 +98,7 @@ The `run` command can directly execute snippets in: Python, Bash, Shell, Node.js
 ### Documentation
 - Write docstrings for all public functions
 - Keep docstrings brief - explain what the function does
+- Comments should explain **why**, not what the code does
 - Use clarifying inline comments for complex logic
 
 ### Code quality
